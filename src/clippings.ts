@@ -121,7 +121,7 @@ function parseRecord(segment: string): ClippingRecord | string {
   }
   if (blank !== "") return `expected an empty third line, found ${JSON.stringify(blank)}`;
 
-  const titleLine = rawTitle.replace(/^﻿/, "");
+  const titleLine = rawTitle.replace(/^\uFEFF/, "");
   const meta = METADATA.exec(metadata);
   if (meta === null) return `unrecognised metadata line: ${JSON.stringify(metadata)}`;
   const [, kindWord, page, lo, hi, added] = meta;
@@ -158,7 +158,7 @@ export function parseClippings(source: string): ParseResult {
   for (let i = 0; i < segments.length; i++) {
     const segment = segments[i];
     if (segment === undefined) continue;
-    if (segment.replace(/^﻿/, "").trim() === "") continue;
+    if (segment.replace(/^\uFEFF/, "").trim() === "") continue;
     const parsed = parseRecord(segment);
     if (typeof parsed === "string") failures.push({ record: i + 1, message: parsed });
     else records.push(parsed);

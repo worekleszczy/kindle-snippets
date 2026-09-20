@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { DRM_SENTINEL, parseClippings, parseTimestamp } from "./clippings";
+import { fixtureExpectations, fixtureSource } from "./fixtures/load";
 
 // Records are built here rather than read from the fixture, because the
 // malformed cases must not live in a fixture that is required to parse cleanly.
@@ -44,7 +45,7 @@ describe("byte-order marks", () => {
   test("a mid-file mark is stripped and does not change the title", () => {
     const source =
       record("Wieczorny_Pociag_Nocny (Jan Kowalski)", HIGHLIGHT_META, "plain") +
-      record("﻿Wieczorny_Pociag_Nocny (Jan Kowalski)", HIGHLIGHT_META, "marked");
+      record("\uFEFFWieczorny_Pociag_Nocny (Jan Kowalski)", HIGHLIGHT_META, "marked");
     const { records, failures } = parseClippings(source);
     expect(failures).toEqual([]);
     expect(records[1]?.titleLine).toBe("Wieczorny_Pociag_Nocny (Jan Kowalski)");
@@ -139,7 +140,7 @@ describe("timestamps", () => {
 
 describe("content", () => {
   test("invisible characters are preserved verbatim", () => {
-    const text = "a b​c — “quoted”";
+    const text = "a\u00a0b\u200bc — “quoted”";
     const { records } = parseClippings(record("B (A)", HIGHLIGHT_META, text));
     expect(records[0]?.text).toBe(text);
   });
@@ -161,12 +162,61 @@ describe("content", () => {
 describe("totality", () => {
   test("an empty source yields no records and no failures", () => {
     expect(parseClippings("")).toEqual({ records: [], failures: [] });
-    expect(parseClippings("﻿\r\n  \r\n")).toEqual({ records: [], failures: [] });
+    expect(parseClippings("\uFEFF\r\n  \r\n")).toEqual({ records: [], failures: [] });
   });
 
   test("a trailing separator does not produce an empty record", () => {
     const { records, failures } = parseClippings(record("B (A)", HIGHLIGHT_META, "only"));
     expect(records).toHaveLength(1);
     expect(failures).toEqual([]);
+  });
+});
+
+describe("the committed fixture", () => {
+  const source = fixtureSource();
+  const expected = fixtureExpectations();
+  const { records, failures } = parseClippings(source);
+
+  test("parses completely, with the recorded per-kind counts", () => {
+    expect(failures).toEqual([]);
+    expect(records).toHaveLength(expected.records);
+    const kinds = { highlight: 0, note: 0, bookmark: 0 };
+    for (const record of records) kinds[record.kind]++;
+    expect(kinds).toEqual(expected.kinds);
+  });
+
+  test("carries a byte-order mark on a title line at a non-zero offset", () => {
+    const at = source.indexOf("\uFEFF", 1);
+    expect(at).toBeGreaterThan(0);
+    expect(records.some((r) => r.titleLine.startsWith("\uFEFF"))).toBe(false);
+  });
+
+  test("carries both metadata shapes and a single-location note line", () => {
+    expect(records.some((r) => r.kind === "highlight" && r.page !== null)).toBe(true);
+    expect(records.some((r) => r.kind === "highlight" && r.page === null)).toBe(true);
+    expect(records.some((r) => r.kind === "note" && r.location.lo === r.location.hi)).toBe(true);
+  });
+
+  test("carries a roman-numeral page", () => {
+    expect(records.some((r) => r.page !== null && /^[ivxlcdm]+$/i.test(r.page))).toBe(true);
+  });
+
+  test("carries an empty bookmark, an empty highlight and a DRM sentinel", () => {
+    expect(records.some((r) => r.kind === "bookmark" && r.empty)).toBe(true);
+    expect(records.some((r) => r.kind === "highlight" && r.empty)).toBe(true);
+    expect(records.some((r) => r.drmLimited)).toBe(true);
+  });
+
+  test("carries invisible characters and non-ASCII letters in a title and a text", () => {
+    expect(records.some((r) => r.text.includes("\u00a0"))).toBe(true);
+    expect(records.some((r) => r.text.includes("\u200b"))).toBe(true);
+    expect(records.some((r) => /[\u0080-\uffff]/.test(r.titleLine))).toBe(true);
+    expect(records.some((r) => /[\u0080-\uffff]/.test(r.text))).toBe(true);
+  });
+
+  test("preserves the record shape of a real file byte for byte", () => {
+    expect(source).toContain("\r\n==========\r\n");
+    expect(source.endsWith("==========\r\n")).toBe(true);
+    expect(source.split("\n").every((line) => line === "" || line.endsWith("\r"))).toBe(true);
   });
 });

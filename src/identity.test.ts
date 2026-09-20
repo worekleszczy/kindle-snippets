@@ -2,6 +2,8 @@ import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { SyncError } from "./args";
 import type { ClippingRecord } from "./clippings";
+import { parseClippings } from "./clippings";
+import { fixtureExpectations, fixtureSource } from "./fixtures/load";
 import {
   deriveBook,
   deriveBookId,
@@ -194,5 +196,31 @@ describe("identity takes no configuration input", () => {
     for (const forbidden of ["process.env", "Date", "Intl", "toLocale", "Math.random"]) {
       expect(source).not.toContain(forbidden);
     }
+  });
+});
+
+describe("the committed fixture", () => {
+  const { records } = parseClippings(fixtureSource());
+  const expected = fixtureExpectations();
+
+  test("every record yields a distinct identifier", () => {
+    const clippings = deriveClippings(records);
+    expect(clippings).toHaveLength(records.length);
+    expect(new Set(clippings.map((c) => c.id)).size).toBe(records.length);
+  });
+
+  test("identifiers are twelve lowercase hexadecimal characters", () => {
+    for (const clipping of deriveClippings(records)) expect(clipping.id).toMatch(/^[0-9a-f]{12}$/);
+  });
+
+  test("the title shapes resolve to the recorded book identifiers", () => {
+    const books = [...new Set(records.map((r) => deriveBookId(r.titleLine)))].sort();
+    expect(books).toEqual(expected.books);
+  });
+
+  test("two title lines sharing a four-word prefix share a book directory", () => {
+    const titles = [...new Set(records.map((r) => r.titleLine))];
+    const shared = titles.filter((t) => deriveBookId(t) === "harry-potter-and-the");
+    expect(shared.length).toBeGreaterThan(1);
   });
 });

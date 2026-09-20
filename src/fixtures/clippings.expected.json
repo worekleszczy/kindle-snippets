@@ -1,0 +1,64 @@
+{
+  "records": 42,
+  "books": [
+    "9781234567890",
+    "a-grammar-of-small",
+    "half-a-bridge",
+    "harry-potter-and-the",
+    "lanterns-for-the-harbour",
+    "opowiesc-o-zazolconej-gesli",
+    "patterns-of-distributed-systems",
+    "the-amber-corridor",
+    "the-cartographers-apology",
+    "the-quiet-test",
+    "the-silent-ledger",
+    "wieczorny-pociag-nocny"
+  ],
+  "kinds": {
+    "highlight": 35,
+    "note": 6,
+    "bookmark": 1
+  },
+  "highlights": {
+    "kept": 29,
+    "discarded": 6
+  },
+  "notes": [
+    {
+      "id": "3c8a8a5095dd",
+      "book": "9781234567890",
+      "location": 1051,
+      "attachedTo": "323e260f27e0"
+    },
+    {
+      "id": "e6ed0c48aeaf",
+      "book": "9781234567890",
+      "location": 1424,
+      "attachedTo": "9f421ecc8c56"
+    },
+    {
+      "id": "c958b50cc877",
+      "book": "half-a-bridge",
+      "location": 4015,
+      "attachedTo": "40b79335fce5"
+    },
+    {
+      "id": "c6418d99f18b",
+      "book": "the-amber-corridor",
+      "location": 1164,
+      "attachedTo": "d9fc379612a0"
+    },
+    {
+      "id": "9a3ede448709",
+      "book": "the-cartographers-apology",
+      "location": 534,
+      "attachedTo": null
+    },
+    {
+      "id": "27814373e456",
+      "book": "the-cartographers-apology",
+      "location": 534,
+      "attachedTo": null
+    }
+  ]
+}

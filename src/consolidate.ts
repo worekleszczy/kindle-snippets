@@ -16,7 +16,7 @@ export interface Consolidation {
 // normalise is for comparison only. The store always holds the text exactly as
 // the device wrote it, invisible characters included.
 export function normalise(text: string): string {
-  return text.replace(/ /g, " ").replace(/​/g, "").replace(/\s+/g, " ").trim();
+  return text.replace(/\u00a0/g, " ").replace(/\u200b/g, "").replace(/\s+/g, " ").trim();
 }
 
 function sortedUnion(...lists: string[][]): string[] {

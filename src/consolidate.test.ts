@@ -1,8 +1,9 @@
 import { describe, expect, test } from "bun:test";
-import { DRM_SENTINEL } from "./clippings";
+import { DRM_SENTINEL, parseClippings } from "./clippings";
 import { consolidate, normalise, unionClippings } from "./consolidate";
+import { fixtureExpectations, fixtureSource } from "./fixtures/load";
 import type { Clipping } from "./identity";
-import { deriveClippingId } from "./identity";
+import { deriveClippingId, deriveClippings } from "./identity";
 
 interface Spec {
   book?: string;
@@ -42,8 +43,8 @@ const ids = (clippings: Clipping[]): string[] => clippings.map((c) => c.id).sort
 
 describe("normalise", () => {
   test("invisible characters do not defeat comparison", () => {
-    const a = "a quiet  test";
-    const b = "a quiet​ test";
+    const a = "a\u00a0quiet  test";
+    const b = "a quiet\u200b test";
     expect(normalise(a)).toBe(normalise(b));
     expect(a).not.toBe(b);
   });
@@ -347,5 +348,188 @@ describe("union of store and source", () => {
     const secondRun = consolidate(unionClippings(firstRun.kept, [c]));
     expect(ids(secondRun.kept)).toEqual([c.id]);
     expect(secondRun.kept[0]?.supersedes).toEqual([a.id, b.id].sort());
+  });
+});
+
+describe("the committed fixture", () => {
+  const { records } = parseClippings(fixtureSource());
+  const expected = fixtureExpectations();
+  const all = deriveClippings(records);
+  const { kept, discarded } = consolidate(all);
+  const keptHighlights = kept.filter((c) => c.kind === "highlight");
+  const text = new Map(all.map((c) => [c.id, normalise(c.text)]));
+  const normalised = (c: Clipping): string => text.get(c.id) ?? "";
+  const overlaps = (a: Clipping, b: Clipping): boolean =>
+    a.location.lo <= b.location.hi && b.location.lo <= a.location.hi;
+  const contains = (a: string, b: string): boolean => a !== b && (a.includes(b) || b.includes(a));
+  const comparable = all.filter((c) => c.kind === "highlight" && !c.empty && !c.drmLimited);
+  const width = (c: Clipping): number => c.location.hi - c.location.lo;
+  const candidatesOf = (note: Clipping): Clipping[] =>
+    keptHighlights.filter(
+      (h) =>
+        h.book === note.book &&
+        h.location.lo <= note.location.lo &&
+        h.location.hi >= note.location.hi,
+    );
+
+  // pairs() walks the comparable highlights once so each collapse-outcome test
+  // can state its own predicate over the same set.
+  function pairs(): [Clipping, Clipping][] {
+    const out: [Clipping, Clipping][] = [];
+    for (const a of comparable) for (const b of comparable) if (a.id < b.id) out.push([a, b]);
+    return out;
+  }
+
+  test("kept and discarded counts match the recorded expectations", () => {
+    expect(keptHighlights).toHaveLength(expected.highlights.kept);
+    expect(discarded).toHaveLength(expected.highlights.discarded);
+    expect(keptHighlights.length + discarded.length).toBe(expected.kinds.highlight);
+  });
+
+  test("every discarded highlight is named in some survivor's supersedes", () => {
+    const superseded = new Set(kept.flatMap((c) => c.supersedes));
+    for (const gone of discarded) expect(superseded.has(gone.id)).toBe(true);
+  });
+
+  test("each note resolves to the recorded target and none is dropped", () => {
+    const notes = kept.filter((c) => c.kind === "note");
+    expect(notes).toHaveLength(expected.kinds.note);
+    expect(
+      notes.map((n) => ({
+        id: n.id,
+        book: n.book,
+        location: n.location.lo,
+        attachedTo: n.attachedTo,
+      })),
+    ).toEqual(expected.notes);
+  });
+
+  test("a word-aligned prefix extension occurs and collapses", () => {
+    const found = pairs().some(([a, b]) => {
+      const [x, y] = [normalised(a), normalised(b)];
+      const [long, short] = x.length >= y.length ? [x, y] : [y, x];
+      return overlaps(a, b) && a.book === b.book && long !== short && long.startsWith(`${short} `);
+    });
+    expect(found).toBe(true);
+  });
+
+  test("a containment that falls mid-word occurs", () => {
+    const found = pairs().some(([a, b]) => {
+      const [x, y] = [normalised(a), normalised(b)];
+      const [long, short] = x.length >= y.length ? [x, y] : [y, x];
+      if (!overlaps(a, b) || a.book !== b.book || short === "" || !long.includes(short))
+        return false;
+      const at = long.indexOf(short) + short.length;
+      return /\S/.test(long.slice(at, at + 1)) && /\S/.test(short.slice(-1));
+    });
+    expect(found).toBe(true);
+  });
+
+  test("an inner substring, an identical pair and a three-link chain occur", () => {
+    const inner = pairs().some(([a, b]) => {
+      const [x, y] = [normalised(a), normalised(b)];
+      const [long, short] = x.length >= y.length ? [x, y] : [y, x];
+      return overlaps(a, b) && a.book === b.book && contains(x, y) && long.indexOf(short) > 0;
+    });
+    const identical = pairs().some(
+      ([a, b]) => overlaps(a, b) && a.book === b.book && normalised(a) === normalised(b),
+    );
+    expect(inner).toBe(true);
+    expect(identical).toBe(true);
+    expect(kept.some((c) => c.supersedes.length >= 2)).toBe(true);
+  });
+
+  test("an overlapping pair with unrelated text is kept whole", () => {
+    const found = pairs().some(
+      ([a, b]) =>
+        a.book === b.book &&
+        overlaps(a, b) &&
+        !contains(normalised(a), normalised(b)) &&
+        normalised(a) !== normalised(b) &&
+        keptHighlights.some((k) => k.id === a.id) &&
+        keptHighlights.some((k) => k.id === b.id),
+    );
+    expect(found).toBe(true);
+  });
+
+  test("a containment across disjoint ranges and one across two books are both kept", () => {
+    const survives = (c: Clipping): boolean => keptHighlights.some((k) => k.id === c.id);
+    const disjoint = pairs().some(
+      ([a, b]) =>
+        a.book === b.book &&
+        !overlaps(a, b) &&
+        contains(normalised(a), normalised(b)) &&
+        survives(a) &&
+        survives(b),
+    );
+    const crossBook = pairs().some(
+      ([a, b]) =>
+        a.book !== b.book && contains(normalised(a), normalised(b)) && survives(a) && survives(b),
+    );
+    expect(disjoint).toBe(true);
+    expect(crossBook).toBe(true);
+  });
+
+  test("two overlapping sentinels and an empty highlight overlapping a real one survive", () => {
+    const sentinels = keptHighlights.filter((c) => c.drmLimited);
+    expect(
+      sentinels.some((a) =>
+        sentinels.some((b) => b.id !== a.id && b.book === a.book && overlaps(a, b)),
+      ),
+    ).toBe(true);
+    const blanks = keptHighlights.filter((c) => c.empty);
+    expect(blanks.some((a) => comparable.some((b) => b.book === a.book && overlaps(a, b)))).toBe(
+      true,
+    );
+  });
+
+  test("every attachment outcome occurs", () => {
+    const notes = kept.filter((c) => c.kind === "note");
+    const shapes = { single: 0, widths: 0, equalWidth: 0, tie: 0, none: 0, sentinel: 0 };
+    for (const note of notes) {
+      const candidates = candidatesOf(note);
+      if (candidates.length === 0) shapes.none++;
+      if (candidates.length === 1) shapes.single++;
+      if (candidates.length >= 2) {
+        const narrowest = Math.min(...candidates.map(width));
+        const tied = candidates.filter((c) => width(c) === narrowest);
+        if (tied.length === 1) shapes.widths++;
+        else shapes.equalWidth++;
+      }
+      const target = candidates.find((c) => c.id === note.attachedTo);
+      if (target?.drmLimited === true) shapes.sentinel++;
+    }
+    // The complete tie is the constructed `half-a-bridge` note: equal widths,
+    // one hour either side, resolved by the smaller identifier.
+    const tie = notes.find((n) => n.book === "half-a-bridge");
+    const tieCandidates = tie === undefined ? [] : candidatesOf(tie);
+    if (tie !== undefined && tieCandidates.length === 2) shapes.tie++;
+    expect(shapes.single).toBeGreaterThan(0);
+    expect(shapes.widths).toBeGreaterThan(0);
+    expect(shapes.equalWidth).toBeGreaterThan(0);
+    expect(shapes.tie).toBe(1);
+    expect(shapes.none).toBeGreaterThan(0);
+    expect(shapes.sentinel).toBeGreaterThan(0);
+    expect(tie?.attachedTo).toBe([...tieCandidates].map((c) => c.id).sort()[0] ?? null);
+  });
+
+  test("two notes at one location with identical text are both kept", () => {
+    const notes = kept.filter((c) => c.kind === "note");
+    const twins = notes.filter((a) =>
+      notes.some(
+        (b) =>
+          b.id !== a.id &&
+          b.book === a.book &&
+          b.location.lo === a.location.lo &&
+          normalise(b.text) === normalise(a.text),
+      ),
+    );
+    expect(twins.length).toBeGreaterThanOrEqual(2);
+  });
+
+  test("consolidating the fixture twice changes nothing", () => {
+    const second = consolidate(kept);
+    expect(second.kept).toEqual(kept);
+    expect(second.discarded).toEqual([]);
   });
 });
