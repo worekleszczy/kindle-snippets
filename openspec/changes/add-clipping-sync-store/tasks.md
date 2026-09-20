@@ -74,17 +74,17 @@
 
 ## 7. Query command (`src/query.ts`)
 
-- [ ] 7.1 Parse and validate `--book`, `--since`, `--books` and `--cursor`, rejecting any other flag as a usage error via `checkFlags`
-- [ ] 7.2 Implement the no-filter and `--book` paths as a read of the store tree, emitting JSON Lines with `schemaVersion` and no `op` field
-- [ ] 7.3 Fail with exit `1` on an unknown `--book` identifier rather than emitting nothing
-- [ ] 7.4 Implement `--since` via `git diff --name-status <commit>..HEAD`, mapping statuses to `add` / `modify` / `delete` ops
-- [ ] 7.5 Verify the cursor exists and is an ancestor of `HEAD`, failing with a distinct message for each case
-- [ ] 7.6 Emit `delete` objects carrying exactly `schemaVersion`, `op`, `id`, `book`, `kind`
-- [ ] 7.7 Implement `--books` for book records, combining with `--since` and `--book`
-- [ ] 7.8 Implement `--cursor` to print the store's `HEAD`, failing on a store with no commits
-- [ ] 7.9 Order output by book id, then timestamp, then clipping id, so repeated runs are byte-identical
-- [ ] 7.10 Keep stdout machine-readable — diagnostics to stderr — and guarantee the command never writes to the store
-- [ ] 7.11 Write `src/query.test.ts` covering every scenario in `specs/clipping-query/spec.md`, including a test asserting the store's `HEAD`, working tree and index are unchanged after a query
+- [x] 7.1 Parse and validate `--book`, `--since`, `--books` and `--cursor`, rejecting any other flag as a usage error via `checkFlags`
+- [x] 7.2 Implement the no-filter and `--book` paths as a read of the store tree, emitting JSON Lines with `schemaVersion` and no `op` field
+- [x] 7.3 Fail with exit `1` on an unknown `--book` identifier rather than emitting nothing
+- [x] 7.4 Implement `--since` via `git diff --name-status <commit>..HEAD`, mapping statuses to `add` / `modify` / `delete` ops
+- [x] 7.5 Verify the cursor exists and is an ancestor of `HEAD`, failing with a distinct message for each case
+- [x] 7.6 Emit `delete` objects carrying exactly `schemaVersion`, `op`, `id`, `book`, `kind`
+- [x] 7.7 Implement `--books` for book records, combining with `--since` and `--book`
+- [x] 7.8 Implement `--cursor` to print the store's `HEAD`, failing on a store with no commits
+- [x] 7.9 Order output by book id, then timestamp, then clipping id, so repeated runs are byte-identical
+- [x] 7.10 Keep stdout machine-readable — diagnostics to stderr — and guarantee the command never writes to the store
+- [x] 7.11 Write `src/query.test.ts` covering every scenario in `specs/clipping-query/spec.md`, including a test asserting the store's `HEAD`, working tree and index are unchanged after a query
 
 ## 8. Wiring and documentation
 
