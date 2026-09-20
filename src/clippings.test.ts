@@ -1,4 +1,6 @@
 import { describe, expect, test } from "bun:test";
+import { existsSync, readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { DRM_SENTINEL, parseClippings, parseTimestamp } from "./clippings";
 import { fixtureExpectations, fixtureSource } from "./fixtures/load";
 
@@ -218,5 +220,40 @@ describe("the committed fixture", () => {
     expect(source).toContain("\r\n==========\r\n");
     expect(source.endsWith("==========\r\n")).toBe(true);
     expect(source.split("\n").every((line) => line === "" || line.endsWith("\r"))).toBe(true);
+  });
+});
+
+// The privacy requirement is about the repository, not the parser, so these
+// read the committed fixture and the working tree rather than a constructed
+// string. The comparison against a real clippings file only runs on a machine
+// that has one; the gitignore check runs everywhere.
+describe("the committed fixture carries no personal data", () => {
+  const repository = fileURLToPath(new URL("..", import.meta.url));
+  const realPath = fileURLToPath(new URL("../My Clippings.txt", import.meta.url));
+  const realSource = existsSync(realPath) ? readFileSync(realPath, "utf8") : null;
+
+  test("a real clippings file is ignored and untracked", () => {
+    const ignored = Bun.spawnSync(["git", "check-ignore", "--quiet", "My Clippings.txt"], {
+      cwd: repository,
+    });
+    expect(ignored.exitCode).toBe(0);
+    const tracked = Bun.spawnSync(["git", "ls-files", "--", "My Clippings.txt"], {
+      cwd: repository,
+    });
+    expect(new TextDecoder().decode(tracked.stdout).trim()).toBe("");
+  });
+
+  test.skipIf(realSource === null)("no fixture text or title appears in the real file", () => {
+    if (realSource === null) return;
+    const { records } = parseClippings(fixtureSource());
+    expect(records.length).toBeGreaterThan(0);
+    for (const record of records) {
+      if (record.text.trim() !== "" && !record.drmLimited) {
+        expect(realSource.includes(record.text)).toBe(false);
+      }
+    }
+    for (const titleLine of new Set(records.map((r) => r.titleLine))) {
+      expect(realSource.includes(titleLine)).toBe(false);
+    }
   });
 });

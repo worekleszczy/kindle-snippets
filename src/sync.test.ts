@@ -171,6 +171,50 @@ describe("sync", () => {
     expect(await Bun.file(join(store.path, "meta.yaml")).text()).toContain("Pacific/Kiritimati");
   });
 
+  test("two title lines that slug alike share a book, and sources accumulate", async () => {
+    const store = await makeStore();
+    const stone = "Harry Potter and the Philosopher's Stone (Rowling, J.K.)";
+    const chamber = "Harry Potter and the Chamber of Secrets (Rowling, J.K.)";
+    const first = await sourceFile(record(stone, SHORT_META, SHORT_TEXT));
+    expect(await sync(["--source", first, "--store", store.path])).toBe(0);
+    expect(await readdir(join(store.path, "books"))).toEqual(["harry-potter-and-the"]);
+
+    const second = await sourceFile(
+      record(stone, SHORT_META, SHORT_TEXT) + record(chamber, OTHER_META, "A separate passage"),
+    );
+    expect(await sync(["--source", second, "--store", store.path])).toBe(0);
+    expect(await readdir(join(store.path, "books"))).toEqual(["harry-potter-and-the"]);
+    const book = await Bun.file(join(store.path, "books/harry-potter-and-the/book.yaml")).text();
+    expect(book).toContain(`- "${chamber}"`);
+    expect(book).toContain(`- "${stone}"`);
+    expect(await clippingFiles(store.path, "harry-potter-and-the")).toHaveLength(2);
+  });
+
+  test("a note is a record of its own, not a field of the highlight", async () => {
+    const store = await makeStore();
+    const noteMeta =
+      "- Your Note on page 42 | Location 273 | Added on Friday, January 2, 2026 7:20:00 PM";
+    const source = await sourceFile(
+      record(LEDGER, SHORT_META, SHORT_TEXT) + record(LEDGER, noteMeta, "a note of my own"),
+    );
+    expect(await sync(["--source", source, "--store", store.path])).toBe(0);
+
+    const directory = join(store.path, "books/the-silent-ledger/clippings");
+    const files = await clippingFiles(store.path, "the-silent-ledger");
+    expect(files).toHaveLength(2);
+    const contents = await Promise.all(
+      files.map(async (file) => await Bun.file(join(directory, file)).text()),
+    );
+    const note = contents.find((text) => text.includes('kind: "note"'));
+    const highlight = contents.find((text) => text.includes('kind: "highlight"'));
+    expect(note).toContain("a note of my own");
+    expect(highlight).toBeDefined();
+    expect(highlight).not.toContain("a note of my own");
+    const noteId = note?.match(/id: "([0-9a-f]{12})"/)?.[1];
+    expect(noteId).toMatch(/^[0-9a-f]{12}$/);
+    expect(note).toContain(`attachedTo: "${highlight?.match(/id: "([0-9a-f]{12})"/)?.[1]}"`);
+  });
+
   test("the whole fixture syncs, then re-syncs to nothing", async () => {
     const store = await makeStore();
     const fixture = new URL("./fixtures/clippings.txt", import.meta.url).pathname;

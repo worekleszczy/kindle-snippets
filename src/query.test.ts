@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { readFileSync } from "node:fs";
 import { mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -354,5 +355,22 @@ describe("read-only", () => {
     expect(await store.head()).toBe(head);
     expect(await store.status()).toBe(status);
     expect(await store.staged()).toBe(staged);
+  });
+});
+
+// The cursor contract binds whoever operates the store, not the code, so the
+// only thing a test can check is that the operating documentation states it.
+describe("history stability", () => {
+  test("the operating documentation warns against rewriting history past a cursor", () => {
+    const readme = readFileSync(new URL("../README.md", import.meta.url), "utf8").replace(
+      /\s+/g,
+      " ",
+    );
+    expect(readme).toMatch(
+      /History must never be rewritten past a commit a consumer holds as a cursor/i,
+    );
+    expect(readme).toMatch(
+      /Rebasing, amending or garbage-collecting past that point invalidates consumers' cursors/i,
+    );
   });
 });
