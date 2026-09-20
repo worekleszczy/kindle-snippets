@@ -5,3 +5,4 @@ node_modules/
 .claude/worktrees/
 # Compiled-binary backups (the binary itself is already ignored above).
 kindle-sync.*-backup
+My Clippings.txt
