@@ -151,7 +151,11 @@ describe("book records", () => {
       record(LEDGER, WIDE, "a wide passage about the sea and the shore") +
         record(LEDGER, NOTE, "a note on the passage") +
         record(QUIET, ELSEWHERE, "another book entirely") +
-        record("The Silent Ledger (Quinn, M.)", ELSEWHERE, "the same book under a second title line"),
+        record(
+          "The Silent Ledger (Quinn, M.)",
+          ELSEWHERE,
+          "the same book under a second title line",
+        ),
     );
     const previous = console.log;
     console.log = () => {};
