@@ -10,7 +10,7 @@
 - [x] 1.8 Verify by inspection that no real highlight text, note text or book title appears anywhere in the repository
 - [x] 1.9 Add `engines.bun` to `package.json` pinning the minimum version that ships `Bun.YAML`, and confirm `bun run verify` still passes
 - [x] 1.10 Add a dated `tech.md` entry covering the `git` binary as a runtime requirement, `Bun.YAML` as the store format, and the rejected alternatives
-- [ ] 1.11 Define `SCHEMA_VERSION = 1` in one place and have both commands refuse a store declaring an unrecognised version
+- [x] 1.11 Define `SCHEMA_VERSION = 1` in one place and have both commands refuse a store declaring an unrecognised version
 
 ## 2. Parsing (`src/clippings.ts`)
 
@@ -50,17 +50,17 @@
 
 ## 5. Store (`src/store.ts`)
 
-- [ ] 5.1 Define and serialise the clipping record schema: `schemaVersion`, `id`, `kind`, `book`, `timestamp`, `page`, `location`, `text`, `chapter: null`, `empty`, `drmLimited`, plus `supersedes` or `attachedTo`
-- [ ] 5.2 Define and serialise `book.yaml` with `schemaVersion`, `id`, `title`, `author`, `sources`, where `sources` is the sorted union of existing and newly seen raw title lines
-- [ ] 5.3 Define and serialise `meta.yaml` with `schemaVersion` and `sourceTimezone` only, written once at store creation and never rewritten; ensure no code path reads `sourceTimezone`
-- [ ] 5.4 Implement clipping path derivation as `books/<bookId>/clippings/<local YYYY-MM-DD>--<id>.yaml` with no timezone conversion
-- [ ] 5.5 Implement reading the entire existing store back into records, so consolidation can run over the union
-- [ ] 5.6 Implement a single `git` wrapper over `Bun.spawn` that treats a non-zero exit as a failure carrying stderr
-- [ ] 5.7 Implement preconditions, each failing on its own before any write: source readable, `git` executable, store is a git repository, working tree clean, `user.name` and `user.email` resolve, `schemaVersion` recognised
-- [ ] 5.8 Implement the changeset computation: files to add, files to overwrite, and files to delete for superseded highlights, with additive semantics so absence from the source never deletes
-- [ ] 5.9 Implement the commit message: subject with totals, body with per-book added and deleted counts
-- [ ] 5.10 Ensure serialisation is byte-stable — key order, list order, scalar style — so an unchanged record never produces a spurious diff
-- [ ] 5.11 Write `src/store.test.ts` covering `specs/clipping-store/spec.md` against a temporary git repository created per test
+- [x] 5.1 Define and serialise the clipping record schema: `schemaVersion`, `id`, `kind`, `book`, `timestamp`, `page`, `location`, `text`, `chapter: null`, `empty`, `drmLimited`, plus `supersedes` or `attachedTo`
+- [x] 5.2 Define and serialise `book.yaml` with `schemaVersion`, `id`, `title`, `author`, `sources`, where `sources` is the sorted union of existing and newly seen raw title lines
+- [x] 5.3 Define and serialise `meta.yaml` with `schemaVersion` and `sourceTimezone` only, written once at store creation and never rewritten; ensure no code path reads `sourceTimezone`
+- [x] 5.4 Implement clipping path derivation as `books/<bookId>/clippings/<local YYYY-MM-DD>--<id>.yaml` with no timezone conversion
+- [x] 5.5 Implement reading the entire existing store back into records, so consolidation can run over the union
+- [x] 5.6 Implement a single `git` wrapper over `Bun.spawn` that treats a non-zero exit as a failure carrying stderr
+- [x] 5.7 Implement preconditions, each failing on its own before any write: source readable, `git` executable, store is a git repository, working tree clean, `user.name` and `user.email` resolve, `schemaVersion` recognised
+- [x] 5.8 Implement the changeset computation: files to add, files to overwrite, and files to delete for superseded highlights, with additive semantics so absence from the source never deletes
+- [x] 5.9 Implement the commit message: subject with totals, body with per-book added and deleted counts
+- [x] 5.10 Ensure serialisation is byte-stable — key order, list order, scalar style — so an unchanged record never produces a spurious diff
+- [x] 5.11 Write `src/store.test.ts` covering `specs/clipping-store/spec.md` against a temporary git repository created per test
 
 ## 6. Sync command (`src/sync.ts`)
 
