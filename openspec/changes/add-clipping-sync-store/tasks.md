@@ -25,13 +25,13 @@
 
 ## 3. Identity (`src/identity.ts`)
 
-- [ ] 3.1 Implement author-parenthetical splitting, returning the bare title and the author as one uninterpreted string
-- [ ] 3.2 Implement `bookId`: `-`/`_` to spaces, ASCII fold, strip non-alphanumerics per word, drop empties, first four words, lowercase, join with `-`
-- [ ] 3.3 Fail with a clear message when a title line slugs to an empty identifier
-- [ ] 3.4 Implement `clippingId` as the first 12 hex characters of SHA-256 over book id, kind, `lo`, `hi` and the verbatim local timestamp string, joined by a separator none of them can contain, with text excluded
-- [ ] 3.5 Detect a collision between two non-identical records sharing an identifier and fail naming both
+- [x] 3.1 Implement author-parenthetical splitting, returning the bare title and the author as one uninterpreted string
+- [x] 3.2 Implement `bookId`: `-`/`_` to spaces, ASCII fold, strip non-alphanumerics per word, drop empties, first four words, lowercase, join with `-`
+- [x] 3.3 Fail with a clear message when a title line slugs to an empty identifier
+- [x] 3.4 Implement `clippingId` as the first 12 hex characters of SHA-256 over book id, kind, `lo`, `hi` and the verbatim local timestamp string, joined by a separator none of them can contain, with text excluded
+- [x] 3.5 Detect a collision between two non-identical records sharing an identifier and fail naming both
 - [ ] 3.6 Write `src/identity.test.ts` covering every scenario in `specs/clipping-identity/spec.md`, asserting that the fixture yields one distinct identifier per record and the expected book slug for each title shape
-- [ ] 3.7 Add a test proving identity derivation reads no environment variable, timezone or clock
+- [x] 3.7 Add a test proving identity derivation reads no environment variable, timezone or clock
 
 ## 4. Consolidation (`src/consolidate.ts`)
 
