@@ -1,6 +1,6 @@
 ## 1. Fixture and groundwork
 
-- [ ] 1.1 Add `My Clippings.txt` to `.gitignore` so the real file can never be committed by accident
+- [x] 1.1 Add `My Clippings.txt` to `.gitignore` so the real file can never be committed by accident
 - [ ] 1.2 Write a one-off obfuscation script (kept under `scripts/`, not shipped in the binary) that takes a real clippings file and emits a fixture: word-level deterministic substitution of highlight and note text, synthetic book titles, everything else preserved byte for byte
 - [ ] 1.3 Build `src/fixtures/clippings.txt` from the real file, covering every case the parsing and consolidation specs enumerate — mid-file BOM, both metadata shapes, single-location note line, roman-numeral page, empty bookmark, empty highlight, DRM sentinel, `U+00A0`, `U+200B`, non-ASCII in a title and in text
 - [ ] 1.4 Ensure the fixture's book titles cover each identity shape: `Last, First` author, `First Last` author, multi-author string, hyphenated sideload filename longer than four words, underscored filename, ISBN-only title, title shorter than four words, title with non-ASCII letters, and two titles sharing a four-word prefix
@@ -8,8 +8,8 @@
 - [ ] 1.6 Ensure the fixture's notes cover every attachment outcome: one candidate, two candidates of differing width, two of equal width resolved by timestamp, a complete tie resolved by identifier, no candidate, a DRM-sentinel candidate, and two notes at one location with identical text
 - [ ] 1.7 Write `src/fixtures/clippings.expected.json` recording the fixture's record counts per kind, kept and discarded highlight counts, and each note's expected attachment target
 - [ ] 1.8 Verify by inspection that no real highlight text, note text or book title appears anywhere in the repository
-- [ ] 1.9 Add `engines.bun` to `package.json` pinning the minimum version that ships `Bun.YAML`, and confirm `bun run verify` still passes
-- [ ] 1.10 Add a dated `tech.md` entry covering the `git` binary as a runtime requirement, `Bun.YAML` as the store format, and the rejected alternatives
+- [x] 1.9 Add `engines.bun` to `package.json` pinning the minimum version that ships `Bun.YAML`, and confirm `bun run verify` still passes
+- [x] 1.10 Add a dated `tech.md` entry covering the `git` binary as a runtime requirement, `Bun.YAML` as the store format, and the rejected alternatives
 - [ ] 1.11 Define `SCHEMA_VERSION = 1` in one place and have both commands refuse a store declaring an unrecognised version
 
 ## 2. Parsing (`src/clippings.ts`)

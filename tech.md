@@ -61,3 +61,43 @@ stderr prefixed `kindle-sync:`, via `usage()` and `failure()` in `src/args.ts`.
 
 **Name: `kindle-sync`.** Binary, package name and error prefix. The repo
 directory stays `kindle-snippets-sync`.
+
+## 2026-09-20 — Clipping store: the `git` binary, `Bun.YAML`, and a hand-rolled emitter
+
+### Context
+
+`kindle-sync sync` turns `My Clippings.txt` into a git-backed store of one YAML
+file per clipping, and `kindle-sync query` reads it, using a commit id as an
+incremental cursor. That needs a version-controlled store and a record format.
+
+### Decisions
+
+**`git` as a runtime requirement, invoked through `Bun.spawn`.** The store is a
+git repository outside this repo; `sync` stages and commits, and `query --since`
+resolves a cursor through `git diff --name-status <commit>..HEAD`. All calls go
+through one wrapper in `src/store.ts` that treats a non-zero exit as a failure
+carrying stderr. This is not an npm dependency — the zero-runtime-dependency
+rule is intact — but it is a new external requirement: the machine needs `git`
+on `PATH` and a resolvable commit identity in the store repository. Rejected: a
+JavaScript git implementation (`isomorphic-git`), a large runtime dependency for
+operations the binary already does correctly.
+
+**YAML as the record format, parsed with `Bun.YAML.parse`.** Ships with the
+runtime, so it costs no dependency, and it keeps a 10 KB highlight readable in a
+`git diff`. This pins a minimum Bun version, recorded as `engines.bun` in
+`package.json`. Rejected: JSON (unreadable diffs for long text), and one file per
+book (a single-clipping change would rewrite a 400-record file, which breaks the
+cursor contract that maps one file to one clipping).
+
+**Writing is a hand-rolled emitter, not `Bun.YAML.stringify`.** As of Bun 1.3.14
+`Bun.YAML.stringify` emits flow style on a single line — `{schemaVersion: 1,id:
+abc}` — which defeats both the diff-readability argument above and the
+byte-stability the store needs. `src/store.ts` emits the fixed record schema
+itself: fixed key order, block scalar for text where it is safe and a
+double-quoted scalar otherwise, and `Bun.YAML.parse` on the way back in.
+Revisit if a later Bun ships a block-style `stringify`.
+
+**The real `My Clippings.txt` is never committed.** It is gitignored, and the
+test fixture is an obfuscated extract built by `scripts/obfuscate.ts` plus the
+deliberately constructed cases in `scripts/fixture-cases.txt`. Rejected:
+committing the real file — 1342 personal highlights in the history permanently.
