@@ -1,0 +1,7 @@
+kindle-sync
+node_modules/
+
+# Git worktrees Claude Code creates live here — never part of the repo.
+.claude/worktrees/
+# Compiled-binary backups (the binary itself is already ignored above).
+kindle-sync.*-backup
