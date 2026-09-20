@@ -11,42 +11,42 @@ taking the first four remaining words; lowercasing them; and joining them with
 
 #### Scenario: Ordinary title
 
-- **WHEN** the title line is `The Lean Startup (Ries, Eric)`
-- **THEN** the book identifier is `the-lean-startup`
+- **WHEN** the title line is `The Silent Ledger (Quinn, Marta)`
+- **THEN** the book identifier is `the-silent-ledger`
 
 #### Scenario: Title longer than four words
 
 - **WHEN** the title line is
-  `Mating in Captivity: How to keep desire and passion alive in long-term relationships (Perel, Esther)`
-- **THEN** the book identifier is `mating-in-captivity-how`
+  `Distant Shores: A Study of Tidal Drift and Coastal Memory (Hale, Robert)`
+- **THEN** the book identifier is `distant-shores-a-study`
 
 #### Scenario: Sideloaded filename as title
 
 - **WHEN** the title line is
-  `fundamentals-of-software-architecture-an-engineering-approach-mark-richards-neal-ford-helion (Mark Richards and Neal Ford)`
+  `patterns-of-distributed-systems-an-engineering-primer-ada-lovelace-grace-hopper-press (Ada Lovelace and Grace Hopper)`
 - **THEN** hyphens are treated as word separators and the book identifier is
-  `fundamentals-of-software-architecture`
+  `patterns-of-distributed-systems`
 
 #### Scenario: Underscore-separated filename as title
 
-- **WHEN** the title line is `Nieznosna_lekkosc_bytu (Milan Kundera)`
-- **THEN** the book identifier is `nieznosna-lekkosc-bytu`
+- **WHEN** the title line is `Wieczorny_Pociag_Nocny (Jan Kowalski)`
+- **THEN** the book identifier is `wieczorny-pociag-nocny`
 
 #### Scenario: Non-ASCII letters are folded
 
-- **WHEN** the title line is `Sapiens. Od zwierząt do bogów (Yuval Noah Harari)`
-- **THEN** the book identifier is `sapiens-od-zwierzat-do`, containing only
+- **WHEN** the title line is `Opowieść. O zażółconej gęśli jaźni (Zofia Nałkowska)`
+- **THEN** the book identifier is `opowiesc-o-zazolconej-gesli`, containing only
   ASCII alphanumerics and `-`
 
 #### Scenario: Numeric title
 
-- **WHEN** the title line is `9780132702539 (Jim Arlow)`
-- **THEN** the book identifier is `9780132702539`
+- **WHEN** the title line is `9781234567890 (Alan Turing)`
+- **THEN** the book identifier is `9781234567890`
 
 #### Scenario: Fewer than four words
 
-- **WHEN** the title line is `deds (Ben Stopford)`
-- **THEN** the book identifier is `deds`
+- **WHEN** the title line is `noms (Iris Chen)`
+- **THEN** the book identifier is `noms`
 
 #### Scenario: Title yields no usable words
 
@@ -59,13 +59,13 @@ taking the first four remaining words; lowercasing them; and joining them with
 A trailing `(...)` group on the title line SHALL be treated as the author field
 and excluded from identifier derivation. It SHALL be retained on the book
 record. Its internal format SHALL NOT be interpreted — `Ries, Eric`,
-`Eric Evans` and `Mark Richards and Neal Ford` are all stored as written.
+`Eric Evans` and `Ada Lovelace and Grace Hopper` are all stored as written.
 
 #### Scenario: Author excluded from the identifier
 
-- **WHEN** the title line is `The Mom Test (Rob Fitzpatrick)`
-- **THEN** the book identifier is `the-mom-test` and the stored author is
-  `Rob Fitzpatrick`
+- **WHEN** the title line is `The Quiet Test (Nora Bell)`
+- **THEN** the book identifier is `the-quiet-test` and the stored author is
+  `Nora Bell`
 
 #### Scenario: Title with no parenthesised author
 
@@ -124,10 +124,10 @@ contribute to the digest.
   timestamp
 - **THEN** they receive different clipping identifiers
 
-#### Scenario: Reference file yields no collisions
+#### Scenario: Fixture yields no collisions
 
-- **WHEN** identifiers are derived for all 1342 records of the reference sample
-- **THEN** 1342 distinct identifiers are produced
+- **WHEN** identifiers are derived for every record of the committed fixture
+- **THEN** the number of distinct identifiers equals the number of records
 
 #### Scenario: Text change does not change the identifier
 

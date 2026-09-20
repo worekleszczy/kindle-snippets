@@ -16,10 +16,10 @@ source file states it, with no timezone conversion.
 
 #### Scenario: Clipping file path
 
-- **WHEN** a highlight in book `the-lean-startup` has timestamp
+- **WHEN** a highlight in book `the-silent-ledger` has timestamp
   `2026-01-02 19:13:49` and identifier `7c4e2a91b3d0`
 - **THEN** it is written to
-  `books/the-lean-startup/clippings/2026-01-02--7c4e2a91b3d0.yaml`
+  `books/the-silent-ledger/clippings/2026-01-02--7c4e2a91b3d0.yaml`
 
 #### Scenario: Path derives only from the record
 
@@ -78,14 +78,14 @@ line that has ever resolved to this book, sorted.
 
 #### Scenario: Book written with its source title
 
-- **WHEN** book `sapiens-od-zwierzat-do` is written
-- **THEN** its `title` is `Sapiens. Od zwierząt do bogów`, its `author` is
-  `Yuval Noah Harari`, and its `sources` contains the full raw title line
+- **WHEN** book `opowiesc-o-zazolconej-gesli` is written
+- **THEN** its `title` is `Opowieść. O zażółconej gęśli jaźni`, its `author` is
+  `Zofia Nałkowska`, and its `sources` contains the full raw title line
   including the author parenthetical
 
 #### Scenario: Multi-author string is not split
 
-- **WHEN** the title line's author field is `Mark Richards and Neal Ford`
+- **WHEN** the title line's author field is `Ada Lovelace and Grace Hopper`
 - **THEN** `author` is that exact string, not a list
 
 #### Scenario: Sources accumulate across syncs
@@ -122,9 +122,9 @@ history.
 
 #### Scenario: Discarded highlight remains recoverable
 
-- **WHEN** consolidation discards 172 highlights
-- **THEN** the committed `source/My Clippings.txt` still contains all 1189
-  original highlight records
+- **WHEN** consolidation discards a highlight superseded by a longer one
+- **THEN** the committed `source/My Clippings.txt` still contains the discarded
+  highlight's original record
 
 #### Scenario: Recovering an earlier source file
 

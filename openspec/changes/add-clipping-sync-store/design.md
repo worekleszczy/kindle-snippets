@@ -3,10 +3,12 @@
 `My Clippings.txt` is the only place a Kindle records highlights locally. It is
 append-only, the device can wipe it, and nothing can read it incrementally.
 
-Every decision below was checked against a real 636 KB sample, committed to
-this repo as `src/fixtures/my-clippings.txt`: 1342 records, 20 books, February
-2024 to July 2026. The measurements matter because the format's folklore is
-wrong in two places that would have cost data.
+Every decision below was checked against a real 636 KB sample: 1342 records,
+20 books, February 2024 to July 2026. The measurements matter because the
+format's folklore is wrong in two places that would have cost data. The sample
+itself is **not** committed — it holds personal reading material. Only the
+aggregate measurements appear here, and the committed test fixture is an
+obfuscated extract of it.
 
 Current state of the codebase: `src/cli.ts` dispatches `help` and `version`
 only. `src/args.ts` holds hand-rolled flag helpers, `usage()` and `failure()`.
@@ -183,23 +185,23 @@ First four words of the title with the author parenthetical stripped,
 Produces no collisions across the sample's 20 books.
 
 Hyphen splitting is not optional: without it the sideloaded
-`fundamentals-of-software-architecture-an-engineering-approach-…-helion` is one
+`patterns-of-distributed-systems-an-engineering-primer-…-press` is one
 80-character word.
 
 ASCII folding is not cosmetic. macOS stores filenames NFD and Linux NFC, so a
-directory named `sapiens-od-zwierząt-do` can appear as two distinct paths in one
+directory named `opowiesc-o-zazolconej-gęśli` can appear as two distinct paths in one
 git repo cloned across machines. Folding removes the class. The unfolded title
 survives in `book.yaml`.
 
 The rule guarantees that re-loading the same title line always lands in the same
 book. It cannot merge two *different* title strings for one book — a sideloaded
-`ddd-evans` and a purchased `Domain-Driven Design: Tackling…` stay separate, and
+`evt-sourcing` and a purchased `Event Sourcing: Tackling…` stay separate, and
 no automatic rule fixes that. Recording every raw title line in `sources` makes
 a wrong merge visible without introducing a second identifier.
 
 The author string is stored as one verbatim field. The sample shows three
 incompatible conventions — `Ries, Eric`, `Eric Evans`,
-`Mark Richards and Neal Ford` — so parsing it into a list would require
+`Ada Lovelace and Grace Hopper` — so parsing it into a list would require
 guessing.
 
 ### Paths and identifiers take no configuration input
@@ -279,12 +281,37 @@ store path risks committing into the wrong repository, so its absence is a usage
 error. No config file; the repo has no config-file concept and one flag per
 location is enough.
 
-### The real sample is the test fixture
+### The test fixture is an obfuscated extract, not the real file
 
-`src/fixtures/my-clippings.txt` is committed, so every count in the specs is
-directly assertable and any future rule change is checked against real data.
-The trade is that 1342 personal highlights live in this repository's history
-permanently.
+`src/fixtures/clippings.txt` is a subset of real records whose user-authored
+text and book titles are replaced with synthetic substitutes. The record
+structure is preserved byte for byte in shape — separators, CRLF line endings,
+mid-file byte-order marks, metadata lines, timestamps — because those are what
+the parser contracts on.
+
+Obfuscation is word-level and deterministic, which preserves the text
+relationships consolidation depends on: in the real sample 184 of 188
+containment pairs align on word boundaries, so substituting word for word keeps
+prefix and substring relationships intact. The remaining 4 fall mid-word, so the
+fixture carries a deliberate mid-word containment case to cover that path.
+
+Expected counts live beside it in `src/fixtures/clippings.expected.json` rather
+than being hard-coded in the specs, so the specs do not encode facts about the
+author's library.
+
+**What this costs:** the real corpus is no longer a regression test. A rule
+change that is correct on the fixture but wrong on 1342 real records would not
+be caught automatically. The mitigation is the first-real-sync acceptance step,
+which checks the real numbers once by hand — 20 books, 1017 highlights, 139
+notes, 14 bookmarks.
+
+**Alternative considered:** committing the real file, which makes every count
+assertable. Rejected — it puts 1342 personal highlights in the repository's
+history permanently and irreversibly.
+
+**Alternative considered:** a gitignored real file with an opt-in test that runs
+when present. Rejected as a second, silently-skipped code path whose absence in
+CI is indistinguishable from passing.
 
 ### Module boundaries
 
@@ -329,9 +356,15 @@ behaviour is testable without touching a filesystem or a git repository.
   precondition is the only guard; a second concurrent run will fail it or fail
   on git's index lock.
 
-- **Committing the real clippings file** → 1342 personal highlights enter this
-  repository's history permanently and cannot be removed without rewriting it.
-  Accepted in exchange for assertable counts.
+- **The real corpus is not a regression test** → the fixture covers every rule
+  by construction, and the first-real-sync step checks the real totals by hand.
+  A rule change correct on the fixture but wrong at scale is caught there, not
+  automatically.
+
+- **The fixture must be maintained alongside the rules** → a new rule with no
+  fixture case is a silent coverage hole. The consolidation and parsing specs
+  each carry an explicit requirement enumerating the cases the fixture must
+  contain, so the gap is visible in review.
 
 - **Pinning a minimum Bun version through `Bun.YAML`** → recorded in
   `package.json` and `tech.md`; the binary is self-contained, so only the build

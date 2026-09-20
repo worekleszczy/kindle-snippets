@@ -14,8 +14,8 @@ scope.
 
 #### Scenario: Book filter
 
-- **WHEN** `query --book the-lean-startup` runs
-- **THEN** only clippings under `books/the-lean-startup/` are emitted
+- **WHEN** `query --book the-silent-ledger` runs
+- **THEN** only clippings under `books/the-silent-ledger/` are emitted
 
 #### Scenario: Cursor filter
 
@@ -25,7 +25,7 @@ scope.
 
 #### Scenario: Both filters
 
-- **WHEN** `query --book the-lean-startup --since <commit>` runs
+- **WHEN** `query --book the-silent-ledger --since <commit>` runs
 - **THEN** only changed clippings belonging to that book are emitted
 
 #### Scenario: Unsupported filter
@@ -35,7 +35,7 @@ scope.
 
 #### Scenario: Unknown book
 
-- **WHEN** `query --book the-lean-startupp` names a book that does not exist in
+- **WHEN** `query --book the-silent-ledgerr` names a book that does not exist in
   the store
 - **THEN** the command reports the unknown identifier and exits `1`, so that a
   typo cannot be mistaken for an empty book
@@ -87,7 +87,7 @@ machine-readable.
 
 #### Scenario: One object per line
 
-- **WHEN** `query --book the-mom-test` emits 18 clippings
+- **WHEN** `query --book the-quiet-test` emits 18 clippings
 - **THEN** stdout contains 18 lines, each a complete JSON object with a
   `schemaVersion` field
 

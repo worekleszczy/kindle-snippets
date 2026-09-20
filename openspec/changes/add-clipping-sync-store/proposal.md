@@ -34,8 +34,11 @@ can pull from incrementally by commit id.
   entry in `tech.md`.
 - **New use of `Bun.YAML`** for reading and writing store files. Keeps the
   zero-runtime-dependency rule intact but pins a minimum Bun version.
-- **The real clippings sample is committed** as `src/fixtures/my-clippings.txt`
-  so the specs' counts are directly assertable.
+- **An obfuscated test fixture** at `src/fixtures/clippings.txt`: a subset of
+  real records whose text and book titles are replaced with synthetic
+  substitutes, preserving every structural quirk the parser and consolidation
+  rules depend on. The real `My Clippings.txt` is gitignored and never
+  committed.
 
 No existing behaviour changes. `help` and `version` are untouched.
 
@@ -90,8 +93,10 @@ command convention:
 dated entry for the `git` binary dependency and the `Bun.YAML` choice.
 `package.json` gains an `engines.bun` floor.
 
-**New fixture**: `src/fixtures/my-clippings.txt`, the real 636 KB sample,
-committed so the counts in the specs are assertable.
+**New fixture**: `src/fixtures/clippings.txt` (obfuscated extract) and
+`src/fixtures/clippings.expected.json` (its expected counts and attachment
+targets). `.gitignore` gains `My Clippings.txt` so the real file cannot be
+committed by accident.
 
 **External**: requires `git` on `PATH` and a store repository initialised
 outside this repo, with a resolvable commit identity. The store repo's history

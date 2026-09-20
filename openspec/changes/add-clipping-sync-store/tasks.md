@@ -1,9 +1,16 @@
 ## 1. Fixture and groundwork
 
-- [ ] 1.1 Move the real sample to `src/fixtures/my-clippings.txt` and commit it, removing the untracked copy from the repo root
-- [ ] 1.2 Add `engines.bun` to `package.json` pinning the minimum version that ships `Bun.YAML`, and confirm `bun run verify` still passes
-- [ ] 1.3 Add a dated `tech.md` entry covering the `git` binary as a runtime requirement, `Bun.YAML` as the store format, and the rejected alternatives
-- [ ] 1.4 Define `SCHEMA_VERSION = 1` in one place and have both commands refuse a store declaring an unrecognised version
+- [ ] 1.1 Add `My Clippings.txt` to `.gitignore` so the real file can never be committed by accident
+- [ ] 1.2 Write a one-off obfuscation script (kept under `scripts/`, not shipped in the binary) that takes a real clippings file and emits a fixture: word-level deterministic substitution of highlight and note text, synthetic book titles, everything else preserved byte for byte
+- [ ] 1.3 Build `src/fixtures/clippings.txt` from the real file, covering every case the parsing and consolidation specs enumerate — mid-file BOM, both metadata shapes, single-location note line, roman-numeral page, empty bookmark, empty highlight, DRM sentinel, `U+00A0`, `U+200B`, non-ASCII in a title and in text
+- [ ] 1.4 Ensure the fixture's book titles cover each identity shape: `Last, First` author, `First Last` author, multi-author string, hyphenated sideload filename longer than four words, underscored filename, ISBN-only title, title shorter than four words, title with non-ASCII letters, and two titles sharing a four-word prefix
+- [ ] 1.5 Ensure the fixture's highlights cover every collapse outcome: word-aligned prefix extension, mid-word containment, inner substring, identical text with differing timestamps, three-link chain, overlapping with unrelated text, containment across disjoint ranges, containment across two books, two overlapping DRM sentinels, empty highlight overlapping one with text
+- [ ] 1.6 Ensure the fixture's notes cover every attachment outcome: one candidate, two candidates of differing width, two of equal width resolved by timestamp, a complete tie resolved by identifier, no candidate, a DRM-sentinel candidate, and two notes at one location with identical text
+- [ ] 1.7 Write `src/fixtures/clippings.expected.json` recording the fixture's record counts per kind, kept and discarded highlight counts, and each note's expected attachment target
+- [ ] 1.8 Verify by inspection that no real highlight text, note text or book title appears anywhere in the repository
+- [ ] 1.9 Add `engines.bun` to `package.json` pinning the minimum version that ships `Bun.YAML`, and confirm `bun run verify` still passes
+- [ ] 1.10 Add a dated `tech.md` entry covering the `git` binary as a runtime requirement, `Bun.YAML` as the store format, and the rejected alternatives
+- [ ] 1.11 Define `SCHEMA_VERSION = 1` in one place and have both commands refuse a store declaring an unrecognised version
 
 ## 2. Parsing (`src/clippings.ts`)
 
@@ -14,7 +21,7 @@
 - [ ] 2.5 Classify empty-content records and clipping-limit sentinels with flags rather than dropping them
 - [ ] 2.6 Report any unparseable record through `failure()` naming its position; never skip one silently
 - [ ] 2.7 Handle an empty source file as zero records and no failure
-- [ ] 2.8 Write `src/clippings.test.ts` covering every scenario in `specs/clippings-parsing/spec.md`, including the fixture-wide assertion of 1342 records as 1189 / 139 / 14 with zero failures
+- [ ] 2.8 Write `src/clippings.test.ts` covering every scenario in `specs/clippings-parsing/spec.md`, asserting the fixture parses with zero failures and matches the per-kind counts in `clippings.expected.json`; malformed-record cases use inline strings, since the fixture itself must parse cleanly
 
 ## 3. Identity (`src/identity.ts`)
 
@@ -23,7 +30,7 @@
 - [ ] 3.3 Fail with a clear message when a title line slugs to an empty identifier
 - [ ] 3.4 Implement `clippingId` as the first 12 hex characters of SHA-256 over book id, kind, `lo`, `hi` and the verbatim local timestamp string, joined by a separator none of them can contain, with text excluded
 - [ ] 3.5 Detect a collision between two non-identical records sharing an identifier and fail naming both
-- [ ] 3.6 Write `src/identity.test.ts` covering every scenario in `specs/clipping-identity/spec.md`, including the fixture-wide assertion that 1342 records yield 1342 distinct identifiers and the 20 expected book slugs
+- [ ] 3.6 Write `src/identity.test.ts` covering every scenario in `specs/clipping-identity/spec.md`, asserting that the fixture yields one distinct identifier per record and the expected book slug for each title shape
 - [ ] 3.7 Add a test proving identity derivation reads no environment variable, timezone or clock
 
 ## 4. Consolidation (`src/consolidate.ts`)
@@ -36,7 +43,7 @@
 - [ ] 4.6 Implement note attachment: containing kept highlights, narrowest range, then nearest timestamp, then smallest identifier, leaving `attachedTo` null when there is no candidate
 - [ ] 4.7 Allow empty and DRM-limited highlights as attachment targets
 - [ ] 4.8 Leave notes and bookmarks untouched by collapse
-- [ ] 4.9 Write `src/consolidate.test.ts` covering every scenario in `specs/clipping-consolidation/spec.md`, asserting on the fixture that 1189 highlights reduce to 1017 and all 139 notes attach, 7 of them to a DRM-limited highlight
+- [ ] 4.9 Write `src/consolidate.test.ts` covering every scenario in `specs/clipping-consolidation/spec.md`, asserting that the fixture's kept, discarded and attachment results match `clippings.expected.json`
 - [ ] 4.10 Add a regression test for the overlapping-but-unrelated pair, proving location overlap alone never collapses
 - [ ] 4.11 Add a test proving consolidation is idempotent over its own output
 - [ ] 4.12 Add a test for supersede chaining across two runs: A collapses into B, then B into C, and C ends up listing both
@@ -91,6 +98,6 @@
 
 - [ ] 9.1 Initialise the store repository outside this repo, confirm it has a commit identity, and record its path
 - [ ] 9.2 Run `sync --dry-run` against the real file and check the changeset before committing anything
-- [ ] 9.3 Run `sync`, then confirm the tree holds 20 books, 1017 highlights, 139 notes and 14 bookmarks
+- [ ] 9.3 Run `sync`, then confirm the tree holds 20 books, 1017 highlights, 139 notes and 14 bookmarks — the acceptance check that replaces the real corpus as a regression test
 - [ ] 9.4 Run `sync` a second time and confirm it creates no commit
 - [ ] 9.5 Run `query --since <first commit>` and confirm the op stream matches what the second sync did

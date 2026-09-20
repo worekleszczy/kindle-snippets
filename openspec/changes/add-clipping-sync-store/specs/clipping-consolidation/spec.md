@@ -49,7 +49,7 @@ earlier-timestamped highlight SHALL be kept.
 #### Scenario: Extended highlight supersedes its prefix
 
 - **WHEN** a book contains a highlight at `272-274` with text
-  `A comprehensive theory of entrepreneurship should addre...` and a later
+  `A comprehensive account of tidal drift should addre...` and a later
   highlight at `272-277` whose text begins with that same text
 - **THEN** only the `272-277` highlight is kept
 
@@ -62,8 +62,8 @@ earlier-timestamped highlight SHALL be kept.
 #### Scenario: Overlapping ranges with unrelated text are both kept
 
 - **WHEN** a book contains a highlight at `1992-2011` reading
-  `swojego bliźniego, do wyegzekwowania prawa „oko za oko”...` and one at
-  `2003-2011` reading `Jeszcze bardziej interesująca kwestia dotyczy...`
+  `swojego sąsiada, do wyegzekwowania prawa „ząb za ząb”...` and one at
+  `2003-2011` reading `Jeszcze bardziej zawiła kwestia dotyczy...`
 - **THEN** both highlights are kept, because neither text contains the other
 
 #### Scenario: Identical text recorded twice
@@ -101,10 +101,34 @@ events whose text Amazon withheld.
 - **WHEN** an empty-content highlight's range intersects a highlight with text
 - **THEN** both are kept
 
-#### Scenario: Reference file collapse volume
+#### Scenario: Fixture collapse volume
 
-- **WHEN** the 1189 highlights of the reference sample are consolidated
-- **THEN** 1017 highlights are kept and 172 are discarded
+- **WHEN** the committed fixture's highlights are consolidated
+- **THEN** the kept and discarded counts match those recorded in
+  `src/fixtures/clippings.expected.json`
+
+### Requirement: The fixture exercises every collapse outcome
+
+The fixture SHALL contain at least one instance of each collapse outcome, so
+that no rule in this specification is covered only by an inline test string:
+a word-aligned prefix extension; a containment that falls mid-word; an inner
+substring; an identical-text pair with differing timestamps; a three-link
+collapse chain; an overlapping pair with unrelated text; a containment pair
+whose ranges are disjoint; a containment pair split across two books; two
+overlapping DRM sentinels; and an empty-content highlight overlapping one with
+text.
+
+#### Scenario: Mid-word containment still collapses
+
+- **WHEN** a highlight's normalised text ends mid-word and is a substring of a
+  longer overlapping highlight
+- **THEN** it is collapsed, because the rule is character containment and not
+  word containment
+
+#### Scenario: Every collapse outcome has fixture coverage
+
+- **WHEN** the fixture is consolidated
+- **THEN** each listed outcome occurs at least once
 
 ### Requirement: Collapsed identifiers are recorded on the survivor
 
@@ -213,12 +237,25 @@ passage.
 - **WHEN** the only kept highlight containing a note's location is DRM-limited
 - **THEN** the note attaches to it rather than being left unattached
 
-#### Scenario: Reference file attachment completeness
+#### Scenario: Fixture attachment completeness
 
-- **WHEN** the 139 notes of the reference sample are attached after
-  consolidation
-- **THEN** all 139 resolve to exactly one highlight, 7 of them to a DRM-limited
-  highlight, and none is dropped
+- **WHEN** the committed fixture's notes are attached after consolidation
+- **THEN** each note's resolved target matches the one recorded in
+  `src/fixtures/clippings.expected.json`, and no note is dropped
+
+### Requirement: The fixture exercises every attachment outcome
+
+The fixture SHALL contain at least one note for each attachment outcome: a
+single containing highlight; two candidates of differing range width; two
+candidates of equal width resolved by timestamp; a complete tie resolved by
+identifier; no containing candidate at all; a candidate that is a DRM-limited
+highlight; and two notes at one location with identical text and differing
+timestamps.
+
+#### Scenario: Every attachment outcome has fixture coverage
+
+- **WHEN** the fixture's notes are attached
+- **THEN** each listed outcome occurs at least once
 
 ### Requirement: Notes remain first-class records
 

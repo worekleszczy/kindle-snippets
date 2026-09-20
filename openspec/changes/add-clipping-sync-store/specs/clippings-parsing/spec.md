@@ -9,8 +9,8 @@ line, in that order.
 
 #### Scenario: Well-formed file splits into records
 
-- **WHEN** a source file containing 1342 separator-delimited segments is parsed
-- **THEN** the parser yields 1342 records and no trailing empty record
+- **WHEN** a source file containing N separator-delimited segments is parsed
+- **THEN** the parser yields N records and no trailing empty record
 
 #### Scenario: Record with an unexpected line count
 
@@ -124,14 +124,54 @@ The parser SHALL account for every record in the source. It SHALL NOT silently
 skip, truncate or ignore a record. Any record it cannot parse SHALL be reported
 through `failure()` with enough detail to locate it.
 
-#### Scenario: Reference file parses completely
+#### Scenario: Fixture parses completely
 
-- **WHEN** the repository's reference fixture `src/fixtures/my-clippings.txt`
-  is parsed
-- **THEN** 1342 records are emitted — 1189 highlights, 139 notes, 14 bookmarks
-  — and zero parse failures are reported
+- **WHEN** the committed fixture `src/fixtures/clippings.txt` is parsed
+- **THEN** every record is emitted, the per-kind counts match those recorded in
+  `src/fixtures/clippings.expected.json`, and zero parse failures are reported
 
 #### Scenario: Empty source file
 
 - **WHEN** the source file is empty or contains only whitespace
 - **THEN** the parser emits zero records and reports no failure
+
+### Requirement: The test fixture contains no personal data
+
+No real highlight text, note text or book title SHALL be committed to this
+repository. The fixture SHALL be an obfuscated extract: a subset of records
+whose user-authored text and book titles are replaced with synthetic
+substitutes, while the record structure, metadata lines, timestamps and
+byte-level quirks are preserved. The real `My Clippings.txt` SHALL be
+gitignored.
+
+#### Scenario: Fixture holds no real text
+
+- **WHEN** the committed fixture is inspected
+- **THEN** no highlight text, note text or book title from the author's own
+  clippings file appears in it
+
+#### Scenario: Real file cannot be committed by accident
+
+- **WHEN** a real `My Clippings.txt` is present in the working tree
+- **THEN** `git status` does not offer it, because `.gitignore` excludes it
+
+### Requirement: Fixture composition
+
+The fixture SHALL be structured so that every rule in these specifications is
+exercised by it. It SHALL contain, at minimum: a byte-order mark on a title
+line at a non-zero file offset; metadata lines in both the `on page N | Location`
+and the `on Location` shapes; a single-location note metadata line; a
+roman-numeral page; an empty-content bookmark; an empty-content highlight; a
+DRM clipping-limit sentinel; text containing `U+00A0` and text containing
+`U+200B`; and non-ASCII letters in both a title line and a record's text.
+
+#### Scenario: Every parsing rule has fixture coverage
+
+- **WHEN** the fixture is parsed
+- **THEN** at least one record exercises each of the listed structural cases
+
+#### Scenario: Obfuscation preserves structure
+
+- **WHEN** the fixture's synthetic text is substituted for the real text
+- **THEN** record boundaries, line endings, byte-order-mark positions, metadata
+  lines and timestamps are byte-identical in shape to those of a real file
