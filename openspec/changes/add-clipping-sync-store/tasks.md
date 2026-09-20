@@ -35,18 +35,18 @@
 
 ## 4. Consolidation (`src/consolidate.ts`)
 
-- [ ] 4.1 Implement comparison normalisation: `U+00A0` to space, drop `U+200B`, collapse whitespace, trim — used only for comparison
-- [ ] 4.2 Take the union of stored records and parsed records keyed by clipping identifier as the input to consolidation
-- [ ] 4.3 Implement highlight collapse: intersecting ranges **and** normalised text containment, keeping the longer text, keeping the earlier timestamp on equal text, never crossing a book boundary
-- [ ] 4.4 Exclude empty-content and DRM-limited highlights from text comparison in both directions
-- [ ] 4.5 Record collapsed identifiers in the survivor's `supersedes` as a sorted, deduplicated set, inheriting the `supersedes` entries of everything it collapses
-- [ ] 4.6 Implement note attachment: containing kept highlights, narrowest range, then nearest timestamp, then smallest identifier, leaving `attachedTo` null when there is no candidate
-- [ ] 4.7 Allow empty and DRM-limited highlights as attachment targets
-- [ ] 4.8 Leave notes and bookmarks untouched by collapse
+- [x] 4.1 Implement comparison normalisation: `U+00A0` to space, drop `U+200B`, collapse whitespace, trim — used only for comparison
+- [x] 4.2 Take the union of stored records and parsed records keyed by clipping identifier as the input to consolidation
+- [x] 4.3 Implement highlight collapse: intersecting ranges **and** normalised text containment, keeping the longer text, keeping the earlier timestamp on equal text, never crossing a book boundary
+- [x] 4.4 Exclude empty-content and DRM-limited highlights from text comparison in both directions
+- [x] 4.5 Record collapsed identifiers in the survivor's `supersedes` as a sorted, deduplicated set, inheriting the `supersedes` entries of everything it collapses
+- [x] 4.6 Implement note attachment: containing kept highlights, narrowest range, then nearest timestamp, then smallest identifier, leaving `attachedTo` null when there is no candidate
+- [x] 4.7 Allow empty and DRM-limited highlights as attachment targets
+- [x] 4.8 Leave notes and bookmarks untouched by collapse
 - [ ] 4.9 Write `src/consolidate.test.ts` covering every scenario in `specs/clipping-consolidation/spec.md`, asserting that the fixture's kept, discarded and attachment results match `clippings.expected.json`
-- [ ] 4.10 Add a regression test for the overlapping-but-unrelated pair, proving location overlap alone never collapses
-- [ ] 4.11 Add a test proving consolidation is idempotent over its own output
-- [ ] 4.12 Add a test for supersede chaining across two runs: A collapses into B, then B into C, and C ends up listing both
+- [x] 4.10 Add a regression test for the overlapping-but-unrelated pair, proving location overlap alone never collapses
+- [x] 4.11 Add a test proving consolidation is idempotent over its own output
+- [x] 4.12 Add a test for supersede chaining across two runs: A collapses into B, then B into C, and C ends up listing both
 
 ## 5. Store (`src/store.ts`)
 
