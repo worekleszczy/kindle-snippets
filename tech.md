@@ -39,7 +39,12 @@ typecheck gate and therefore does not enforce the strict mode it configures.
 **Biome for lint and format.** One binary, one config file, no plugin
 ecosystem. Deviation from focusmux, which has neither. `noNonNullAssertion`
 overlaps with the `noUncheckedIndexedAccess` idiom — the index loops carry an
-explicit `undefined` guard instead of `!`, so the rule stays on.
+explicit `undefined` guard instead of `!`, so the rule stays on. `lineWidth`
+100 makes the test files repo-specific: `src/args.test.ts:66` sits at 99
+characters with `"sync"` as the `checkFlags` label, so copying this repo's
+tests into a sibling whose command name is two or more characters longer fails
+`biome check` until `bun run fix` rewraps them. (Found by the spec-reviewer
+repo, which hit it at 108.)
 
 **Tests: `bun test`, colocated.** `src/foo.test.ts` sits next to `src/foo.ts`.
 No CI — `bun run verify` is the gate, run locally. Cost: nothing catches a
