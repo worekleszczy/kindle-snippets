@@ -88,10 +88,10 @@
 
 ## 8. Wiring and documentation
 
-- [ ] 8.1 Add `sync` and `query` dispatch cases to `src/cli.ts` and extend `USAGE`; keep `run()` free of `process.exit`
-- [ ] 8.2 Extend `src/cli.test.ts` for the new dispatch and usage-error paths
-- [ ] 8.3 Document both commands, all flags and environment variables, and the store layout in `README.md`
-- [ ] 8.4 Document the store operating contract in `README.md`: history must never be rewritten past a published cursor, sync is additive, removal is manual
+- [x] 8.1 Add `sync` and `query` dispatch cases to `src/cli.ts` and extend `USAGE`; keep `run()` free of `process.exit`
+- [x] 8.2 Extend `src/cli.test.ts` for the new dispatch and usage-error paths
+- [x] 8.3 Document both commands, all flags and environment variables, and the store layout in `README.md`
+- [x] 8.4 Document the store operating contract in `README.md`: history must never be rewritten past a published cursor, sync is additive, removal is manual
 - [ ] 8.5 Run `bun run verify` and confirm typecheck, Biome and all tests pass
 
 ## 9. First real sync
