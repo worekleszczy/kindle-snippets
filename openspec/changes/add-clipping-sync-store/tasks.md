@@ -92,12 +92,19 @@
 - [x] 8.2 Extend `src/cli.test.ts` for the new dispatch and usage-error paths
 - [x] 8.3 Document both commands, all flags and environment variables, and the store layout in `README.md`
 - [x] 8.4 Document the store operating contract in `README.md`: history must never be rewritten past a published cursor, sync is additive, removal is manual
-- [ ] 8.5 Run `bun run verify` and confirm typecheck, Biome and all tests pass
+- [x] 8.5 Run `bun run verify` and confirm typecheck, Biome and all tests pass
 
 ## 9. First real sync
 
-- [ ] 9.1 Initialise the store repository outside this repo, confirm it has a commit identity, and record its path
-- [ ] 9.2 Run `sync --dry-run` against the real file and check the changeset before committing anything
-- [ ] 9.3 Run `sync`, then confirm the tree holds 20 books, 1017 highlights, 139 notes and 14 bookmarks — the acceptance check that replaces the real corpus as a regression test
-- [ ] 9.4 Run `sync` a second time and confirm it creates no commit
-- [ ] 9.5 Run `query --since <first commit>` and confirm the op stream matches what the second sync did
+- [x] 9.1 Initialise the store repository outside this repo, confirm it has a commit identity, and record its path
+- [x] 9.2 Run `sync --dry-run` against the real file and check the changeset before committing anything
+- [x] 9.3 Run `sync`, then confirm the tree holds 20 books, 1017 highlights, 139 notes and 14 bookmarks — the acceptance check that replaces the real corpus as a regression test
+- [x] 9.4 Run `sync` a second time and confirm it creates no commit
+- [x] 9.5 Run `query --since <first commit>` and confirm the op stream matches what the second sync did
+
+## Notes
+
+The first real sync (section 9) ran against a store at
+`/Users/piotrjosiak/flight-control/data/kindle-clippings-store`: 20 books,
+1017 highlights, 139 notes and 14 bookmarks, a second run created no commit,
+and `query --since <first commit>` emitted nothing.
