@@ -418,7 +418,6 @@ export async function computeChangeset(store: string, plan: StorePlan): Promise<
   for (const clipping of plan.kept)
     desired.set(clippingPath(clipping), serialiseClipping(clipping));
   for (const book of plan.books) desired.set(bookPath(book.id), serialiseBook(book));
-  desired.set(SOURCE_PATH, plan.source);
   if ((await Bun.file(join(store, META_PATH)).exists()) === false) {
     desired.set(META_PATH, serialiseMeta(plan.sourceTimezone));
   }
@@ -449,6 +448,22 @@ export async function computeChangeset(store: string, plan: StorePlan): Promise<
     countFor(changeset.books, bookOfPath(path)).deleted++;
   }
   changeset.deleted.sort();
+
+  // The source snapshot rides along with a change to the records; on its own it
+  // is not one. A device reset leaves a shorter file that consolidates to the
+  // same store, and copying it in would turn that into a commit — exactly the
+  // churn the idempotency requirement rules out.
+  if (!isEmptyChangeset(changeset)) {
+    const file = Bun.file(join(store, SOURCE_PATH));
+    const exists = await file.exists();
+    if (!exists || (await file.text()) !== plan.source) {
+      changeset.files.set(SOURCE_PATH, plan.source);
+      if (exists) changeset.modified.push(SOURCE_PATH);
+      else changeset.added.push(SOURCE_PATH);
+    }
+  }
+  changeset.added.sort();
+  changeset.modified.sort();
 
   return changeset;
 }

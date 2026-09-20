@@ -19,7 +19,7 @@
 - [x] 2.3 Parse the metadata grammar covering both the `on page N | Location` and the `on Location` shapes, with and without a location range end
 - [x] 2.4 Parse the `Added on` English long date into a zone-less local date-time with no timezone conversion
 - [x] 2.5 Classify empty-content records and clipping-limit sentinels with flags rather than dropping them
-- [ ] 2.6 Report any unparseable record through `failure()` naming its position; never skip one silently
+- [x] 2.6 Report any unparseable record through `failure()` naming its position; never skip one silently
 - [x] 2.7 Handle an empty source file as zero records and no failure
 - [x] 2.8 Write `src/clippings.test.ts` covering every scenario in `specs/clippings-parsing/spec.md`, asserting the fixture parses with zero failures and matches the per-kind counts in `clippings.expected.json`; malformed-record cases use inline strings, since the fixture itself must parse cleanly
 
@@ -64,13 +64,13 @@
 
 ## 6. Sync command (`src/sync.ts`)
 
-- [ ] 6.1 Resolve `--source` from flag, then `KINDLE_SYNC_SOURCE`, then `/Volumes/Kindle/documents/My Clippings.txt`; resolve `--store` from flag then `KINDLE_SYNC_STORE` with no default, treating absence as a usage error; validate with `checkFlags`
-- [ ] 6.2 Wire parse → identity → store read → consolidate over the union → changeset, writing clipping files, `book.yaml` files and `meta.yaml`
-- [ ] 6.3 Copy the source file byte for byte to `source/My Clippings.txt`
-- [ ] 6.4 Commit only when the changeset is non-empty; report "nothing changed" and exit `0` otherwise
-- [ ] 6.5 Implement `--dry-run`: print the changeset, write nothing, leave `HEAD`, working tree and index untouched, exit `0`
-- [ ] 6.6 Ensure a failure at any point exits `1` and leaves no commit representing a partial write
-- [ ] 6.7 Write `src/sync.test.ts` proving idempotency, the append case, the supersede-across-syncs case, the wiped-source case (no deletions, no commit), `--dry-run`, and each precondition failure
+- [x] 6.1 Resolve `--source` from flag, then `KINDLE_SYNC_SOURCE`, then `/Volumes/Kindle/documents/My Clippings.txt`; resolve `--store` from flag then `KINDLE_SYNC_STORE` with no default, treating absence as a usage error; validate with `checkFlags`
+- [x] 6.2 Wire parse → identity → store read → consolidate over the union → changeset, writing clipping files, `book.yaml` files and `meta.yaml`
+- [x] 6.3 Copy the source file byte for byte to `source/My Clippings.txt`
+- [x] 6.4 Commit only when the changeset is non-empty; report "nothing changed" and exit `0` otherwise
+- [x] 6.5 Implement `--dry-run`: print the changeset, write nothing, leave `HEAD`, working tree and index untouched, exit `0`
+- [x] 6.6 Ensure a failure at any point exits `1` and leaves no commit representing a partial write
+- [x] 6.7 Write `src/sync.test.ts` proving idempotency, the append case, the supersede-across-syncs case, the wiped-source case (no deletions, no commit), `--dry-run`, and each precondition failure
 
 ## 7. Query command (`src/query.ts`)
 
