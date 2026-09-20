@@ -106,6 +106,14 @@ export function usage(message: string): number {
   return EXIT_USAGE;
 }
 
+// SyncError is a runtime failure raised by the steps a command composes —
+// parsing, identity, the store — carrying a message that is already fit to be
+// handed to failure(). Commands catch it at their top level and return
+// EXIT_FAILURE; nothing else in the codebase catches it.
+export class SyncError extends Error {
+  override name = "SyncError";
+}
+
 // failure reports a runtime error (the command was well-formed but could not
 // be carried out) and returns its exit code.
 export function failure(message: string): number {

@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "Kindle snippets sync CLI",
   "type": "module",
+  "engines": {
+    "bun": ">=1.3.14"
+  },
   "scripts": {
     "build": "bun build --compile src/cli.ts --outfile kindle-sync",
     "test": "bun test",
