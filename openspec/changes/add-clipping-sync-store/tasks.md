@@ -14,13 +14,13 @@
 
 ## 2. Parsing (`src/clippings.ts`)
 
-- [ ] 2.1 Define the record type: kind, raw title line, page as `string | null`, location `lo`/`hi`, zone-less timestamp, verbatim text, `empty` and `drmLimited` flags
-- [ ] 2.2 Split the source on `==========\r\n`, reject any segment that is not title / metadata / blank / content, and strip a BOM from every record's title line
-- [ ] 2.3 Parse the metadata grammar covering both the `on page N | Location` and the `on Location` shapes, with and without a location range end
-- [ ] 2.4 Parse the `Added on` English long date into a zone-less local date-time with no timezone conversion
-- [ ] 2.5 Classify empty-content records and clipping-limit sentinels with flags rather than dropping them
+- [x] 2.1 Define the record type: kind, raw title line, page as `string | null`, location `lo`/`hi`, zone-less timestamp, verbatim text, `empty` and `drmLimited` flags
+- [x] 2.2 Split the source on `==========\r\n`, reject any segment that is not title / metadata / blank / content, and strip a BOM from every record's title line
+- [x] 2.3 Parse the metadata grammar covering both the `on page N | Location` and the `on Location` shapes, with and without a location range end
+- [x] 2.4 Parse the `Added on` English long date into a zone-less local date-time with no timezone conversion
+- [x] 2.5 Classify empty-content records and clipping-limit sentinels with flags rather than dropping them
 - [ ] 2.6 Report any unparseable record through `failure()` naming its position; never skip one silently
-- [ ] 2.7 Handle an empty source file as zero records and no failure
+- [x] 2.7 Handle an empty source file as zero records and no failure
 - [ ] 2.8 Write `src/clippings.test.ts` covering every scenario in `specs/clippings-parsing/spec.md`, asserting the fixture parses with zero failures and matches the per-kind counts in `clippings.expected.json`; malformed-record cases use inline strings, since the fixture itself must parse cleanly
 
 ## 3. Identity (`src/identity.ts`)
