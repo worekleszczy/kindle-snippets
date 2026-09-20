@@ -308,6 +308,14 @@ describe("sync failures", () => {
     expect(await Bun.file(join(store.path, "meta.yaml")).exists()).toBe(false);
   });
 
+  test("a title that slugs to nothing exits 1 naming the line", async () => {
+    const store = await makeStore();
+    const source = await sourceFile(record("…… (Anon)", SHORT_META, SHORT_TEXT));
+    expect(await sync(["--source", source, "--store", store.path])).toBe(1);
+    expect(await store.log()).toHaveLength(1);
+    expect(await Bun.file(join(store.path, "meta.yaml")).exists()).toBe(false);
+  });
+
   test("two records sharing an identifier exit 1 naming both", async () => {
     const store = await makeStore();
     const source = await sourceFile(
